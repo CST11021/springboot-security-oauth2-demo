@@ -1,6 +1,6 @@
 package com.whz.spring.security.oauth2.demo.service.impl;
 
-import com.whz.spring.security.oauth2.demo.entity.SysUser;
+import com.whz.spring.security.oauth2.demo.repository.entity.SysUser;
 import com.whz.spring.security.oauth2.demo.repository.SysUserRepository;
 import com.whz.spring.security.oauth2.demo.service.MyUserService;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,4 +1,4 @@
-package com.whz.spring.security.oauth2.demo.entity;
+package com.whz.spring.security.oauth2.demo.repository.entity;
 
 import lombok.Data;
 

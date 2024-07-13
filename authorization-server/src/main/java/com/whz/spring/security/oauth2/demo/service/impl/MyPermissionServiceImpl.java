@@ -1,8 +1,8 @@
 package com.whz.spring.security.oauth2.demo.service.impl;
 
-import com.whz.spring.security.oauth2.demo.entity.SysPermission;
-import com.whz.spring.security.oauth2.demo.entity.SysRolePermission;
-import com.whz.spring.security.oauth2.demo.entity.SysUserRole;
+import com.whz.spring.security.oauth2.demo.repository.entity.SysPermission;
+import com.whz.spring.security.oauth2.demo.repository.entity.SysRolePermission;
+import com.whz.spring.security.oauth2.demo.repository.entity.SysUserRole;
 import com.whz.spring.security.oauth2.demo.repository.SysPermissionRepository;
 import com.whz.spring.security.oauth2.demo.repository.SysRolePermissionRepository;
 import com.whz.spring.security.oauth2.demo.repository.SysUserRoleRepository;

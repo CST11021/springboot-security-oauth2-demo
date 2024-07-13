@@ -1,7 +1,7 @@
 package com.whz.spring.security.oauth2.demo.repository;
 
 
-import com.whz.spring.security.oauth2.demo.entity.SysRolePermission;
+import com.whz.spring.security.oauth2.demo.repository.entity.SysRolePermission;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;

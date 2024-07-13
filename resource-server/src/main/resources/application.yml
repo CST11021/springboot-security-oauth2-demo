@@ -4,8 +4,8 @@ server:
 security:
   oauth2:
     resource:
+      id: resourceOne
       token-info-uri: http://localhost:8000/oauth/check_token
-#      id: oauth2
 #      jwt:
 #        key-uri: http://localhost:8000/oauth/token_key
 #        # 如果没有配置这项，会自动联网获取

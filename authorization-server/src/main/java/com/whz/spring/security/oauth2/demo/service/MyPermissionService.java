@@ -1,6 +1,6 @@
 package com.whz.spring.security.oauth2.demo.service;
 
-import com.whz.spring.security.oauth2.demo.entity.SysPermission;
+import com.whz.spring.security.oauth2.demo.repository.entity.SysPermission;
 
 import java.util.List;
 

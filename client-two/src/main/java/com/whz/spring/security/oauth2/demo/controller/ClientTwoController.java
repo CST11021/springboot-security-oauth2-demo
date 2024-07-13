@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 
 @Controller
 public class ClientTwoController {
+
     @GetMapping("/list")
     public String list(HttpServletRequest request){
         Cookie[]  cookies = request.getCookies();
@@ -19,4 +20,5 @@ public class ClientTwoController {
         }
         return "index";
     }
+
 }

@@ -18,10 +18,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
+    /** 登录请求的路径 */
+    public final static String login_processing_url = "/authorization/form";
+
     @Autowired
     private MyUserDetailsService userDetailsService;
-    @Autowired
-    private SecurityProperties securityProperties;
 
     /**
      * 从数据库存用户信息
@@ -48,7 +49,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
      */
     @Override
     public void configure(WebSecurity web) throws Exception {
-        web.ignoring().antMatchers("/assets/**", "/css/**", "/images/**","/fonts/**","/js/**","/vendor/**");
+        // 需要放行/error，当登录页面的某些静态资源不存在导致404时会跳转到/error处理，未放行该路径会导致请求重定向至登录页面
+        // 参见：https://juejin.cn/post/7279242389000208438
+        web.ignoring().antMatchers(
+                "/assets/**", "/css/**", "/images/**", "/fonts/**", "/js/**", "/vendor/**", "/error");
     }
 
     @Override
@@ -59,7 +63,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .formLogin()
                 .loginPage("/oauth/login")
-                .loginProcessingUrl(securityProperties.getLoginProcessingUrl())
+                .loginProcessingUrl(login_processing_url)
                 .and()
                 .csrf().disable();
     }
@@ -67,12 +71,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 
     /**
-     *   Spring 5 之后必须对密码进行加密
+     *  Spring 5 之后必须对密码进行加密
+     *
      * @return
      */
     @Bean
     public PasswordEncoder passwordEncoder(){
-        return  new BCryptPasswordEncoder();
+        // 使用随机盐加密，对同一个明文加密，每次加密的结果都不一样
+        return new BCryptPasswordEncoder();
     }
 
     /**

@@ -8,7 +8,7 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>2.1.6.RELEASE</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath/>
     </parent>
 
     <groupId>com.whz.springboot.secutiry.oauth2.demo</groupId>
@@ -34,9 +34,34 @@
             <!--指定optional为true可以避免被repackage打war时devtools也被打进war包-->
            <optional>true</optional>
        </dependency>
-
-
     </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.security.oauth.boot</groupId>
+                <artifactId>spring-security-oauth2-autoconfigure</artifactId>
+                <version>2.1.4.RELEASE</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.thymeleaf.extras</groupId>
+                <artifactId>thymeleaf-extras-springsecurity5</artifactId>
+                <version>3.0.4.RELEASE</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-collections4</artifactId>
+                <version>4.4</version>
+            </dependency>
+            <dependency>
+                <artifactId>fastjson</artifactId>
+                <groupId>com.alibaba</groupId>
+                <version>1.2.83</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
 
 </project>

@@ -18,6 +18,7 @@ import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenCo
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 import org.springframework.security.oauth2.provider.token.store.KeyStoreKeyFactory;
 
+import javax.annotation.Resource;
 import javax.sql.DataSource;
 import java.util.Arrays;
 
@@ -29,26 +30,20 @@ import java.util.Arrays;
 public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter {
 
     /** 数据源 */
-    private final DataSource dataSource;
+    @Resource
+    private DataSource dataSource;
 
     /** 令牌增强器 */
-    private InfoTokenEnhancer tokenEnhancer;
+    @Resource
+    private TokenEnhancerConfig tokenEnhancer;
 
     /** authorization_type 为 password 时需要 */
+    @Resource
     private AuthenticationManager authenticationManager;
 
     /** 使用 oauth/refresh_token 端点api 时需要手动注入到授权服务器安全中 */
+    @Resource
     private UserDetailsService userDetailsService;
-
-    public AuthorizationServerConfig(DataSource dataSource,
-                                     InfoTokenEnhancer tokenEnhancer,
-                                     AuthenticationManager authenticationManager,
-                                     UserDetailsService userDetailsService) {
-        this.dataSource = dataSource;
-        this.tokenEnhancer = tokenEnhancer;
-        this.authenticationManager = authenticationManager;
-        this.userDetailsService = userDetailsService;
-    }
 
     /**
      * 配置客户端的service，就是应用怎么获取到客户端的信息，一般来说是从内存或者数据库中获取
@@ -159,12 +154,9 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
      */
     @Bean
     public TokenStore tokenStore() {
+        // 这里也可以使用redis来存储token
+        // return new RedisTokenStore(redisConnectionFactory);
         return new JwtTokenStore(jwtAccessTokenConverter());
     }
-
-    // public TokenStore redisTokenStore() {
-    //     return new RedisTokenStore(redisConnectionFactory);
-    // }
-
 
 }

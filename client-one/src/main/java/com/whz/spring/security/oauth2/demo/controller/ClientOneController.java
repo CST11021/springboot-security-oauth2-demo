@@ -17,6 +17,7 @@ import org.springframework.web.servlet.mvc.condition.RequestMethodsRequestCondit
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
+import javax.annotation.Resource;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -29,9 +30,18 @@ import java.util.Map;
 @Slf4j
 @Controller
 public class ClientOneController {
-    @Autowired
+
+    @Resource
     private ResourceServerProperties resourceServerProperties;
 
+    /**
+     * http://localhost:8081/clientOne/list
+     *
+     * @param request
+     * @param response
+     * @param authentication
+     * @return
+     */
     @RequestMapping("/list")
     public String index(HttpServletRequest request, HttpServletResponse response, Authentication authentication){
         // 从 spring security 中获取用户信息
