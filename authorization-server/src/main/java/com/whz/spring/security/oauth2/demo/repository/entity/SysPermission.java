@@ -8,7 +8,7 @@ import java.util.Date;
 
 @Data
 @Entity
-@Table(schema = "permission", name = "sys_permission")
+@Table(schema = "auth", name = "sys_permission")
 public class SysPermission implements Serializable {
     private static final long serialVersionUID = 4285835478693487481L;
 

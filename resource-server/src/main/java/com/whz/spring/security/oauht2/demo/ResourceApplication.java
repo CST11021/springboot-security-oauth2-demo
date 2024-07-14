@@ -9,7 +9,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @author <a href="https://echocow.cn">EchoCow</a>
  * @date 19-7-9 下午9:07
  */
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {"com.whz"})
 public class ResourceApplication {
 
     public static void main(String[] args) {

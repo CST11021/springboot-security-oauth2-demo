@@ -1,16 +1,14 @@
 server:
-  port: 8081
+  port: 8083
   servlet:
-    # 这里context-path不要设成/，不然重定向获取code的时候回被拦截
-    context-path: /clientOne
-logging:
-  level:
-    org:
-      springframework:
-        security: DEBUG
+    context-path: /memberSystem
 
 security:
   oauth2:
+#    resource:
+#      jwt:
+#        key-uri: http://localhost:8000/oauth/token_key
+
     resource:
       # 校验访问令牌是否有效的地址
       token-info-uri: http://localhost:8000/oauth/check_token
@@ -21,14 +19,9 @@ security:
           -----BEGIN PUBLIC KEY-----
           MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArgNO1Gp7I48dz+Dp5/sOEF53BjQ/X6o4wvTzmVaENchHiHPr9IfPsMR/qMloC1U60XUUKdhmbCKORqBLFJDtu4F4QMq/h/oymMLkRIa+dnj2QEvSj4xcgVuvwH4f4AHr71AaJyW1zu7Z7AH20JQkU5QZ+zCLd8WnT17sxMYgfGThkLq3xGOiXjGY0qAtN4KWhwJEAMIATiw/akLQL+p/iQMHwiaoNRvcas9C0hA4FYfcjoEobwu07bDZmM2Dl3eP/pCdFPMjyyMKM9zwfq0oMxLmxGSMQQdCz0hBio8IUkGzKAAtkdFPu8S5zx3+n4rCzYGN0/pw3KSrRFNTf3omlwIDAQAB
           -----END PUBLIC KEY-----
+
     client:
-      # 客户端ID
-      client-id: clientOne
-      # 客户端秘钥
-      client-secret: clientOne
-      grant-type: authorization_code,refresh_token
-      scope: all
-      # 获取用户的授权码地址
-      user-authorization-uri: http://localhost:8000/oauth/authorize
-      # 获取访问令牌的地址
+      client-id: UserManagement
+      client-secret: user123
       access-token-uri: http://localhost:8000/oauth/token
+      user-authorization-uri: http://localhost:8000/oauth/authorize

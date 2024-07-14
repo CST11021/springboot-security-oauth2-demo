@@ -7,7 +7,7 @@ import java.io.Serializable;
 
 @Data
 @Entity
-@Table(schema = "permission", name = "sys_role_permission")
+@Table(schema = "auth", name = "sys_role_permission")
 public class SysRolePermission implements Serializable {
     private static final long serialVersionUID = 7402412601579098788L;
 

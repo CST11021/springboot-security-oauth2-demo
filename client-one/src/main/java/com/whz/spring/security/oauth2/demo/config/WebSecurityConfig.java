@@ -26,7 +26,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .logoutSuccessUrl("http://localhost:8000/logout")
                 .and()
                 .authorizeRequests()
-                .antMatchers("/getAllUrl", "/login").permitAll()
+                // 直接放行的uri，可以配置多个
+                .antMatchers("/getAllUrl").permitAll()
+                // 除上面外的所有请求全部需要鉴权认证
                 .anyRequest().authenticated()
                 .and()
                 .csrf().disable();

@@ -2,7 +2,6 @@ package com.whz.spring.security.oauth2.demo.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceServerProperties;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -74,25 +73,20 @@ public class ClientOneController {
 
 
 
-    @Autowired
-    WebApplicationContext applicationContext;
+    @Resource
+    private WebApplicationContext applicationContext;
 
+    /**
+     * 查看所有url
+     *
+     * @return
+     */
     @ResponseBody
     @RequestMapping(value = "/getAllUrl")
     public Object getAllUrl() {
         RequestMappingHandlerMapping mapping = applicationContext.getBean(RequestMappingHandlerMapping.class);
         // 获取url与类和方法的对应信息
         Map<RequestMappingInfo, HandlerMethod> map = mapping.getHandlerMethods();
-
-//		List<String> urlList = new ArrayList<>();
-//		for (RequestMappingInfo info : map.keySet()) {
-//			// 获取url的Set集合，一个方法可能对应多个url
-//			Set<String> patterns = info.getPatternsCondition().getPatterns();
-//
-//			for (String url : patterns) {
-//				urlList.add(url);
-//			}
-//		}
 
         List<Map<String, String>> list = new ArrayList<Map<String, String>>();
         for (Map.Entry<RequestMappingInfo, HandlerMethod> m : map.entrySet()) {
@@ -103,8 +97,8 @@ public class ClientOneController {
             for (String url : p.getPatterns()) {
                 map1.put("url", url);
             }
-            map1.put("className", method.getMethod().getDeclaringClass().getName()); // 类名
-            map1.put("method", method.getMethod().getName()); // 方法名
+            map1.put("className", method.getMethod().getDeclaringClass().getName());
+            map1.put("method", method.getMethod().getName());
             RequestMethodsRequestCondition methodsCondition = info.getMethodsCondition();
             for (RequestMethod requestMethod : methodsCondition.getMethods()) {
                 map1.put("type", requestMethod.toString());
@@ -112,8 +106,6 @@ public class ClientOneController {
 
             list.add(map1);
         }
-
-        // JSONArray jsonArray = JSONArray.fromObject(list);
 
         return JSONObject.toJSONString(list);
     }

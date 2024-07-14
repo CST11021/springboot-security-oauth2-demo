@@ -3,12 +3,15 @@ package com.whz.spring.security.oauth2.demo.domain;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 
+import java.io.Serializable;
 import java.util.Collection;
 
 /**
  * 大部分时候直接用User即可不必扩展
  */
-public class MyUser extends User {
+public class MyUser extends User implements Serializable {
+
+    private static final long serialVersionUID = 3848961143632768115L;
 
     private Integer id;
 
