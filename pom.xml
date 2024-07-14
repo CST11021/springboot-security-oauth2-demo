@@ -21,6 +21,7 @@
         <module>client-one</module>
         <module>client-two</module>
         <module>client-member</module>
+        <module>client-order</module>
     </modules>
 
     <properties>

@@ -39,7 +39,7 @@ create table if not exists oauth_client_details (
 | additional_information	| VARCHAR(4096)	| 这是一个预留的字段,在Oauth的流程中没有实际的使用,可选,但若设置值,必须是JSON格式的数据,在实际应用中, 可以用该字段来存储关于客户端的一些其他信息 |
 | autoapprove	| VARCHAR(256)	| 设置用户是否自动Approval操作, 默认值为 ‘false’, 可选值包括 ‘true’,‘false’, ‘read’,‘write’该字段只适用于grant_type="authorization_code"的情况,当用户登录成功后,若该值为’true’或支持的scope值,则会跳过用户Approve的页面,直接授权 |
 
-## Method 1：使用Postman测试
+## 调试一：使用Postman测试
 首先，启动认证服务器，入口App.java中运行 App.main()，然后执行如下步骤获取授权码 authorization_code
 
 ### 浏览器访问：/oauth/authorize
@@ -177,7 +177,7 @@ curl -X POST 'http://localhost:8000/oauth/check_token' \
 
 
 
- ##  Method 2：使用client-one和client-two测试
+ ##  调试二：使用client-one和client-two测试
 
  http://localhost:8081/clientOne/list
  http://localhost:8082/clientTwo/list
@@ -198,8 +198,7 @@ curl -X POST 'http://localhost:8000/oauth/check_token' \
 4. Client 访问 Resource Server
 >client 通过 OAuth2RestTemplate 附带 token访问resource server，Resource server 调用OAuth2AuthenticationManager 通过 ResourceServerTokenServices 校验 token 信息，校验通过则返回资源给 client
 
-其中的 End point，已经通过Spring 的注解 @FrameworkEndpoint 实现了
-token产生时，client 的相关信息通过 ClientDetailsService 注册到了 Authorization Server
+其中的 End point，已经通过Spring 的注解 @FrameworkEndpoint 实现了token产生时，client 的相关信息通过 ClientDetailsService 注册到了 Authorization Server
 
 token存储在 redis中，部分key解释
 
@@ -270,7 +269,7 @@ pom.xml 中的 spring-security-oauth2-autoconfigure 是自动配置的包，通�
 
 
 
-### 自定义授权服务器：AuthorizationServerConfigurer
+### 定义授权服务器：AuthorizationServerConfigurer
 
 Spring 提供了相应的适配器 AuthorizationServerConfigurerAdapter 类来供我们实现 AuthorizationServerConfigurer 这个接口，我们只要继承这个类，可选择的 override 其中的三个方法:
 ```java
@@ -288,47 +287,7 @@ public void configure(AuthorizationServerEndpointsConfigurer endpoints) {}
 
 
 
-**注解@RequiredArgsConstructor的使用说明：**
-
-> 来源于lombok.RequiredArgsConstructor;使用类中所有带有@NonNull注解的或者带有final修饰的成员变量生成对应的构造方法
->
-> ```java
-> @Configuration
-> @RequiredArgsConstructor
-> @EnableAuthorizationServer
-> public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter {
->     // 数据源
->     private final @NonNull DataSource dataSource;
-> 
->     @Bean
->     public ClientDetailsService clientDetails() {
->         return new JdbcClientDetailsService(dataSource);
->     }
-> }
-> ```
->
-> 也可以使用 AutoWired 自动注入
->
-> ```java
-> @Configuration
-> @EnableAuthorizationServer
-> public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter {
->     // 数据源
->     @Autowired
->     private final  DataSource dataSource;
-> 
->     @Bean
->     public ClientDetailsService clientDetails() {
->         return new JdbcClientDetailsService(dataSource);
->     }
-> } 
-> ```
->
-> 
-
-
-
-### check_token 端点的开放
+### check_token端点的开放
 资源服务器就能够向授权服务器验证并解析 token 获取用户信息(能够验证和解析 token)
 ```java
 @Override
@@ -359,8 +318,7 @@ protected void configure(HttpSecurity http) throws Exception {
         .csrf().disable();
 }
 ```
-关闭 csrf 防护，有效防护 csrf 的一种方式，是在请求地址中添加 token 并验证
-login.html内容如下
+关闭 csrf 防护，有效防护 csrf 的一种方式，是在请求地址中添加 token 并验证，login.html内容如下
 
 ```html
 <form class="login100-form validate-form" action="/authorization/form" method="post">
@@ -388,7 +346,7 @@ basic 对话框登录方式，只需要配置如下即可
 ```java
 @Override
 protected void configure(HttpSecurity http) throws Exception {
-	http.httpBasic();
+		http.httpBasic();
 }
 ```
 
@@ -463,20 +421,6 @@ form-login.html内容如下
  
             </form>
 ```
-SecurityProperties.java 从 application.yml 中读取
-```Java
-@Data
-@Configuration
-@ConfigurationProperties("application.security.oauth")
-public class SecurityProperties {
-
-    /**
-     * 登录请求的路径，默认值 /authorization/form
-     */
-    private String loginProcessingUrl = "/authorization/form";
-
-}
-```
 ### 自定义授权页面
 默认授权请求地址 /oauth/confirm_access
 Controller 控制器如下
@@ -521,7 +465,159 @@ authorization.html 如下
 
             </form>
 ```
-### 资源服务器
+### 自定义登出请求
+
+参见：https://blog.csdn.net/u011066470/article/details/119709644
+
+
+
+[废物大师兄 ](https://www.cnblogs.com/cjsblog/p/10548022.html)介绍的SSO案例多 client登录可行，但没有实现登出功能
+
+>调用认证中心的 logout 方法出错
+
+clientOne 调用登出HttpSecurity.logout().logoutSuccessUrl("http://localhost:8000/logout") 
+成功后再调用server的logout，如果不添加没 http.csrf().disable(); 登出会失败，可能是因为不加这个将只支持post方式的logout退出
+
+在[baeldung](https://www.baeldung.com/spring-security-oauth-revoke-tokens)中介绍的有通过刷新 token 使得原来颁发的
+标准 token 失效，但不适用于 jwt
+
+```
+this article only covers the standard token implementation in the framework, not JWT tokens
+```
+
+jwt 无法使全部client logout,原因在[这里](https://stackoverflow.com/questions/46150345/spring-boot-oauth-2-server-with-jwt-token-logout)
+
+```
+JWT token is self-contained, which means that all information regarding the authentication are in the token itself. If you want to check, 
+if a user is logged in, you just need to check the signature in the JWT token and the token expiration time. No communication with a server is required.
+
+If you want to logout a user with JWT token, you need to delete the JWT token on the client side. And preferrably, the expiration time of JWT 
+tokens should be rather short and the client should e.g. use refresh tokens to get new tokens
+```
+
+maven plugin 设置
+创建一个自动可执行的jar或war文件
+
+```
+<plugin>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-maven-plugin</artifactId>
+      <version>2.2.1.RELEASE</version>
+      <executions>
+        <execution>
+          <goals>
+            <goal>repackage</goal>
+          </goals>
+        </execution>
+      </executions>
+    </plugin>
+```
+
+热部署依赖
+
+```
+
+```
+
+以下配置则不会在代码更改时热启动，只有静态文件更改时刷新浏览器就可以生效
+Devtools can also be configured to only refresh the browser whenever a static resource has changed (and ignore any change in the code)
+
+>spring.devtools.remote.restart.enabled=false
+
+或者这样设置
+
+```
+<plugin>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-maven-plugin</artifactId>
+      <version>2.2.1.RELEASE</version>
+      <configuration>
+        <addResources>true</addResources>
+      </configuration>
+    </plugin>
+```
+
+SpringSecurity配置模版
+
+```
+/**
+ * 开启方法注解支持，我们设置prePostEnabled = true是为了后面能够使用hasRole()这类表达式
+ * 进一步了解可看教程：https://www.baeldung.com/spring-security-method-security
+ */
+@EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true)
+@Configuration
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
+
+    /**
+     * TokenBasedRememberMeServices的生成密钥，
+     * 算法实现详见文档：https://docs.spring.io/spring-security/site/docs/5.1.3.RELEASE/reference/htmlsingle/#remember-me-hash-token
+     */
+    private final String SECRET_KEY = "123456";
+
+    @Autowired
+    private CustomUserDetailsService customUserDetailsService;
+
+    /**
+     * 必须有此方法，Spring Security官方规定必须要有一个密码加密方式。
+     * 注意：例如这里用了BCryptPasswordEncoder()的加密方法，那么在保存用户密码的时候也必须使用这种方法，确保前后一致。
+     * 详情参见项目中Database.java中保存用户的逻辑
+     */
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    /**
+     * 配置Spring Security，下面说明几点注意事项。
+     * 1. Spring Security 默认是开启了CSRF的，此时我们提交的POST表单必须有隐藏的字段来传递CSRF，
+     * 而且在logout中，我们必须通过POST到 /logout 的方法来退出用户，详见我们的login.html和logout.html.
+     * 2. 开启了rememberMe()功能后，我们必须提供rememberMeServices，例如下面的getRememberMeServices()方法，
+     * 而且我们只能在TokenBasedRememberMeServices中设置cookie名称、过期时间等相关配置,如果在别的地方同时配置，会报错。
+     * 错误示例：xxxx.and().rememberMe().rememberMeServices(getRememberMeServices()).rememberMeCookieName("cookie-name")
+     */
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http.formLogin()
+                .loginPage("/login") // 自定义用户登入页面
+                .failureUrl("/login?error") // 自定义登入失败页面，前端可以通过url中是否有error来提供友好的用户登入提示
+                .and()
+                .logout()
+                .logoutUrl("/logout")// 自定义用户登出页面
+                .logoutSuccessUrl("/")
+                .and()
+                .rememberMe() // 开启记住密码功能
+                .rememberMeServices(getRememberMeServices()) // 必须提供
+                .key(SECRET_KEY) // 此SECRET需要和生成TokenBasedRememberMeServices的密钥相同
+                .and()
+                /*
+                 * 默认允许所有路径所有人都可以访问，确保静态资源的正常访问。
+                 * 后面再通过方法注解的方式来控制权限。
+                 */
+                .authorizeRequests().anyRequest().permitAll()
+                .and()
+                .exceptionHandling().accessDeniedPage("/403"); // 权限不足自动跳转403
+    }
+
+    /**
+     * 如果要设置cookie过期时间或其他相关配置，请在下方自行配置
+     */
+    private TokenBasedRememberMeServices getRememberMeServices() {
+        TokenBasedRememberMeServices services = new TokenBasedRememberMeServices(SECRET_KEY, customUserDetailsService);
+        services.setCookieName("remember-cookie");
+        services.setTokenValiditySeconds(100); // 默认14天
+        return services;
+    }
+}
+
+
+```
+
+
+
+
+
+### 定义资源服务器：ResourceServerConfigurer
+
 资源服务器的关键接口为 ResourceServerConfigurer，它的适配器为 ResourceServerConfigurerAdapter，只需要继承他的适配器即可，他有如下两个方法：
 
 |方法名	|参数类型	|描述|
@@ -649,7 +745,7 @@ security:
 
 授权服务器 Oauth2AuthorizationServerConfig 设置
 
-```
+```java
     @Bean
     public JwtAccessTokenConverter jwtAccessTokenConverter() {
         JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
@@ -813,154 +909,25 @@ java.io.EOFException: No content to map to Object due to end of input
 解决方法 additional_information 内容填写为 NULL 或者 json 字符串
 
 
-### SSO登出
-[废物大师兄 ](https://www.cnblogs.com/cjsblog/p/10548022.html)介绍的SSO案例多 client登录可行，但没有实现登出功能
-
->调用认证中心的 logout 方法出错
-
-clientOne 调用登出HttpSecurity.logout().logoutSuccessUrl("http://localhost:8000/logout") 
-成功后再调用server的logout，如果不添加没 http.csrf().disable(); 登出会失败，可能是因为不加这个将只支持post方式的logout退出
-
-在[baeldung](https://www.baeldung.com/spring-security-oauth-revoke-tokens)中介绍的有通过刷新 token 使得原来颁发的
-标准 token 失效，但不适用于 jwt
-```
-this article only covers the standard token implementation in the framework, not JWT tokens
-```
-jwt 无法使全部client logout,原因在[这里](https://stackoverflow.com/questions/46150345/spring-boot-oauth-2-server-with-jwt-token-logout)
-```
-JWT token is self-contained, which means that all information regarding the authentication are in the token itself. If you want to check, 
-if a user is logged in, you just need to check the signature in the JWT token and the token expiration time. No communication with a server is required.
-
-If you want to logout a user with JWT token, you need to delete the JWT token on the client side. And preferrably, the expiration time of JWT 
-tokens should be rather short and the client should e.g. use refresh tokens to get new tokens
-```
-
-maven plugin 设置
-创建一个自动可执行的jar或war文件
-```
-<plugin>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-maven-plugin</artifactId>
-      <version>2.2.1.RELEASE</version>
-      <executions>
-        <execution>
-          <goals>
-            <goal>repackage</goal>
-          </goals>
-        </execution>
-      </executions>
-    </plugin>
-```
-
-热部署依赖
-```
-
-```
-以下配置则不会在代码更改时热启动，只有静态文件更改时刷新浏览器就可以生效
-Devtools can also be configured to only refresh the browser whenever a static resource has changed (and ignore any change in the code)
->spring.devtools.remote.restart.enabled=false
-
-或者这样设置
-```
-<plugin>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-maven-plugin</artifactId>
-      <version>2.2.1.RELEASE</version>
-      <configuration>
-        <addResources>true</addResources>
-      </configuration>
-    </plugin>
-```
-SpringSecurity配置模版
-```
-/**
- * 开启方法注解支持，我们设置prePostEnabled = true是为了后面能够使用hasRole()这类表达式
- * 进一步了解可看教程：https://www.baeldung.com/spring-security-method-security
- */
-@EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true)
-@Configuration
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
-
-    /**
-     * TokenBasedRememberMeServices的生成密钥，
-     * 算法实现详见文档：https://docs.spring.io/spring-security/site/docs/5.1.3.RELEASE/reference/htmlsingle/#remember-me-hash-token
-     */
-    private final String SECRET_KEY = "123456";
-
-    @Autowired
-    private CustomUserDetailsService customUserDetailsService;
-
-    /**
-     * 必须有此方法，Spring Security官方规定必须要有一个密码加密方式。
-     * 注意：例如这里用了BCryptPasswordEncoder()的加密方法，那么在保存用户密码的时候也必须使用这种方法，确保前后一致。
-     * 详情参见项目中Database.java中保存用户的逻辑
-     */
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    /**
-     * 配置Spring Security，下面说明几点注意事项。
-     * 1. Spring Security 默认是开启了CSRF的，此时我们提交的POST表单必须有隐藏的字段来传递CSRF，
-     * 而且在logout中，我们必须通过POST到 /logout 的方法来退出用户，详见我们的login.html和logout.html.
-     * 2. 开启了rememberMe()功能后，我们必须提供rememberMeServices，例如下面的getRememberMeServices()方法，
-     * 而且我们只能在TokenBasedRememberMeServices中设置cookie名称、过期时间等相关配置,如果在别的地方同时配置，会报错。
-     * 错误示例：xxxx.and().rememberMe().rememberMeServices(getRememberMeServices()).rememberMeCookieName("cookie-name")
-     */
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http.formLogin()
-                .loginPage("/login") // 自定义用户登入页面
-                .failureUrl("/login?error") // 自定义登入失败页面，前端可以通过url中是否有error来提供友好的用户登入提示
-                .and()
-                .logout()
-                .logoutUrl("/logout")// 自定义用户登出页面
-                .logoutSuccessUrl("/")
-                .and()
-                .rememberMe() // 开启记住密码功能
-                .rememberMeServices(getRememberMeServices()) // 必须提供
-                .key(SECRET_KEY) // 此SECRET需要和生成TokenBasedRememberMeServices的密钥相同
-                .and()
-                /*
-                 * 默认允许所有路径所有人都可以访问，确保静态资源的正常访问。
-                 * 后面再通过方法注解的方式来控制权限。
-                 */
-                .authorizeRequests().anyRequest().permitAll()
-                .and()
-                .exceptionHandling().accessDeniedPage("/403"); // 权限不足自动跳转403
-    }
-
-    /**
-     * 如果要设置cookie过期时间或其他相关配置，请在下方自行配置
-     */
-    private TokenBasedRememberMeServices getRememberMeServices() {
-        TokenBasedRememberMeServices services = new TokenBasedRememberMeServices(SECRET_KEY, customUserDetailsService);
-        services.setCookieName("remember-cookie");
-        services.setTokenValiditySeconds(100); // 默认14天
-        return services;
-    }
-}
-
-
-```
-
-
-
-
 
 
 
 ### JSON Web Token（JWT）
 
+参见：
+
+https://www.ruanyifeng.com/blog/2018/07/json_web_token-tutorial.html](http://www.ruanyifeng.com/blog/2018/07/json_web_token-tutorial.html
+
+
+
 JSON Web Token（JWT）是一套开放的标准安全地在客户端和服务器之间传输 JSON 格式的信息。JWT的构成，由三部分以分隔符"."连接构成
 
 >1. header (声明类型和加密算法)
->   1.1. 声明类型
+>     1.1. 声明类型
 >   1.2. 声明加密算法
 >2. payload (载荷就是存放有效信息)
 >3. signature
->   3.1 header (base64后的)
+>     3.1 header (base64后的)
 >   3.2 payload (base64后的)
 >   3.3 secret
 
@@ -979,7 +946,7 @@ payload 包括三个部分，再对其进行base64加密就是 JWT 的第二部�
 3私有的声明
 
 ```javascript
-/ javascript
+// javascript
 var encodedString = base64UrlEncode(header) + '.' + base64UrlEncode(payload);
 
 var signature = HMACSHA256(encodedString, 'secret'); 

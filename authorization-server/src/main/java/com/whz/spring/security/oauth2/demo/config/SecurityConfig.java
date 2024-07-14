@@ -62,13 +62,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .anyRequest().authenticated()
                 .and()
                 .formLogin()
+                // 登录页面名称，他会去寻找resources下的static目录, login.html位于static子目录
+                // .loginPage("/login.html")
                 .loginPage("/oauth/login")
                 .loginProcessingUrl(login_processing_url)
                 .and()
                 .csrf().disable();
     }
-
-
 
     /**
      *  Spring 5 之后必须对密码进行加密
